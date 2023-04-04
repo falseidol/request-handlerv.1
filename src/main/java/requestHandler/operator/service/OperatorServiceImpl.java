@@ -1,5 +1,11 @@
 package requestHandler.operator.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import requestHandler.exception.ObjectNotFoundException;
 import requestHandler.exception.ValidationException;
 import requestHandler.request.Request;
@@ -7,12 +13,6 @@ import requestHandler.request.RequestRepository;
 import requestHandler.request.service.RequestService;
 import requestHandler.utils.MyPageRequest;
 import requestHandler.utils.RequestStatus;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -33,9 +33,9 @@ public class OperatorServiceImpl implements OperatorService {
         } else {
             pageRequest = MyPageRequest.makePageRequest(from, size, Sort.by(Sort.Direction.ASC, "created"));
         }
-        return requestService.getRequestsForOperator(RequestStatus.SENT, pageRequest);
+        List<Request> requestList = requestService.getRequestsForOperator(RequestStatus.SENT, pageRequest);
+        return splitText(requestList);
     }
-
     @Override
     public List<Request> getRequestsByUserName(String username, int from, int size, String sortBy) {
         if (username == null) {
@@ -66,5 +66,24 @@ public class OperatorServiceImpl implements OperatorService {
             throw new ValidationException("Такого действия нету");
         }
         return requestRepository.save(request);
+    }
+
+    private List<Request> splitText(List<Request> requestList) {
+        for (Request requestik : requestList) {
+            String[] bebra = requestik.getText().split("");
+            String abob = "";
+            for (int i = 0; i < bebra.length; i++) {
+                abob += bebra[i];
+            }
+            abob = abob.replaceAll("", "-");
+            abob = abob.replaceFirst("-", "");
+            System.out.println(abob);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder = new StringBuilder(abob);
+            System.out.println(abob.length());
+            stringBuilder.deleteCharAt(abob.length() - 1);
+            requestik.setText(String.valueOf(stringBuilder));
+        }
+        return requestList;
     }
 }

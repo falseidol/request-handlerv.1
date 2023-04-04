@@ -88,7 +88,12 @@ public class UserServiceImpl implements UserService {
         } else {
             pageRequest = MyPageRequest.makePageRequest(from, size, Sort.by(Sort.Direction.ASC, "created"));
         }
-        return requestService.getRequestsById(userId, pageRequest);
+        List<Request> requestList = requestService.getRequestsById(userId, pageRequest);
+        for (Request request : requestList) {
+            String textReplacer = request.getText().replaceAll("-", "");
+            request.setText(textReplacer);
+        }
+        return requestList;
     }
 
     @Override
