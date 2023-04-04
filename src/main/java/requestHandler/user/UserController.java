@@ -25,7 +25,7 @@ public class UserController {
         return userService.createRequest(request);
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')") // method only for tests
     @GetMapping("/requests")
     public List<Request> getAll() {
         return userService.getAll();
@@ -38,7 +38,7 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('USER')")
-    @PatchMapping("/send/{userId}/{requestId}") // PATCH MAPPING
+    @PatchMapping("/send/{userId}/{requestId}")
     public Request sendRequestToReview(@PathVariable Long userId, @PathVariable Long requestId) {
         return userService.sendRequestToReview(userId, requestId);
     }
