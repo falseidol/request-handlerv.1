@@ -14,6 +14,7 @@ import requestHandler.request.service.RequestService;
 import requestHandler.utils.MyPageRequest;
 import requestHandler.utils.RequestStatus;
 
+import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -34,7 +35,12 @@ public class OperatorServiceImpl implements OperatorService {
             pageRequest = MyPageRequest.makePageRequest(from, size, Sort.by(Sort.Direction.ASC, "created"));
         }
         List<Request> requestList = requestService.getRequestsForOperator(RequestStatus.SENT, pageRequest);
-        return splitText(requestList);
+        if (requestList.stream().anyMatch(request -> request.getText().contains("—"))) {
+            return requestList;
+        } else {
+            splitText(requestList);
+        }
+        return requestList;
     }
     @Override
     public List<Request> getRequestsByUserName(String username, int from, int size, String sortBy) {
@@ -48,7 +54,13 @@ public class OperatorServiceImpl implements OperatorService {
         } else {
             pageRequest = MyPageRequest.makePageRequest(from, size, Sort.by(Sort.Direction.ASC, "created"));
         }
-        return requestService.getRequestsByUserName(username, pageRequest);
+        List<Request> requestList = requestService.getRequestsByUserName(username, pageRequest);
+        if (requestList.stream().anyMatch(request -> request.getText().contains("—"))) {
+            return requestList;
+        } else {
+            splitText(requestList);
+        }
+        return requestList;
     }
 
     @Override
@@ -69,18 +81,19 @@ public class OperatorServiceImpl implements OperatorService {
     }
 
     private List<Request> splitText(List<Request> requestList) {
+        if (requestList.isEmpty()) {
+            return Collections.emptyList();
+        }
         for (Request requestik : requestList) {
             String[] bebra = requestik.getText().split("");
-            String abob = "";
-            for (int i = 0; i < bebra.length; i++) {
-                abob += bebra[i];
+            StringBuilder abob = new StringBuilder();
+            for (String s : bebra) {
+                abob.append(s);
             }
-            abob = abob.replaceAll("", "-");
-            abob = abob.replaceFirst("-", "");
-            System.out.println(abob);
-            StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder = new StringBuilder(abob);
-            System.out.println(abob.length());
+            abob = new StringBuilder(abob.toString().replaceAll("", "—"));
+            abob = new StringBuilder(abob.toString().replaceFirst("—", ""));
+            StringBuilder stringBuilder;
+            stringBuilder = new StringBuilder(abob.toString());
             stringBuilder.deleteCharAt(abob.length() - 1);
             requestik.setText(String.valueOf(stringBuilder));
         }
